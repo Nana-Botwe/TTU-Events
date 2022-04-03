@@ -1,184 +1,195 @@
-<?php 
-session_start();
-include('includes/config.php');
-
-    ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-  <head>
-
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>TTU Events System</title>
-    <link href="images/ttu logo.jpg" rel="icon">
- <!-- Bootstrap core CSS -->
-    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-   
-    <!-- Bootstrap core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    
-    <link href="css/modern-business.css" rel="stylesheet">
-
-    <link href="css/font-awesome.css" rel="stylesheet">
-
-      <link rel="stylesheet" href="css/font-awesome-4.7.0/css/font-awesome.css">
-      <link rel="stylesheet" href="css/font-awesome-4.7.0/css/font-awesome.min.css">
-     
-
-  <style>
-
-
-#show {
-  display: none;
-  position: fixed;
-  bottom: 30px;
-  left: 30px;
-  z-index: 99;
-  font-size: 18px;
-  border: none;
-  outline: none;
-  background-color: black;
-  color: white;
-  cursor: pointer;
-  padding: 15px;
-  border-top-left-radius:55px ;
-border-top-right-radius: 55px;
-border-bottom-left-radius: 55px;
-border-bottom-right-radius: 55px;
-  
-}
-
-#show:hover {
-  background-color: blue;
+<?php
+ session_start();
+//Database Configuration File
+include('../admin/includes/config.php');
+//error_reporting(0);
+if(isset($_POST['login']))
+  {
  
-  color: white;
-
-}
-  
-
-
-
-
-  </style>
-  </head>
-  <body>
-
- 
-<button onclick="topFunction()" id="show" title="Go to top">
- <i class="fa fa-arrow-up"></i>
-</button>
-
-
-    <!-- Navigation -->
-   <?php include('includes/header.php');?>
-
-    <!-- Page Content -->
-    <div class="container">
-     
-      <div class="row" style="margin-top: 4%">
-
-        <!-- Blog Entries Column -->
-        <div class="col-md-8">
-
-          <!-- Blog Post -->
-<?php 
-     if (isset($_GET['pageno'])) {
-            $pageno = $_GET['pageno'];
-        } else {
-            $pageno = 1;
-        }
-        $no_of_records_per_page = 5;
-        $offset = ($pageno-1) * $no_of_records_per_page;
-
-
-        $total_pages_sql = "SELECT COUNT(*) FROM tblposts";
-        $result = mysqli_query($con,$total_pages_sql);
-        $total_rows = mysqli_fetch_array($result)[0];
-        $total_pages = ceil($total_rows / $no_of_records_per_page);
-
-
-$query=mysqli_query($con,"select tblposts.id as pid,tblposts.PostTitle as posttitle,tblposts.PostImage,tblcategory.CategoryName as category,tblcategory.id as cid,tblsubcategory.Subcategory as subcategory,tblposts.PostDetails as postdetails,tblposts.PostingDate as postingdate,tblposts.PostUrl as url from tblposts left join tblcategory on tblcategory.id=tblposts.CategoryId left join  tblsubcategory on  tblsubcategory.SubCategoryId=tblposts.SubCategoryId where tblposts.Is_Active=1 order by tblposts.id desc  LIMIT $offset, $no_of_records_per_page");
-while ($row=mysqli_fetch_array($query)) {
-?>
-
-          <div class="card mb-4">
- <img class="card-img-top" src="admin/postimages/<?php echo htmlentities($row['PostImage']);?>" alt="<?php echo htmlentities($row['posttitle']);?>">
-            <div class="card-body">
-              <h2 class="card-title"><?php echo htmlentities($row['posttitle']);?></h2>
-                 <p><b>Category : </b> <a href="category.php?catid=<?php echo htmlentities($row['cid'])?>"><?php echo htmlentities($row['category']);?></a> </p>
-       
-              <a href="news-details.php?nid=<?php echo htmlentities($row['pid'])?>" class="btn btn-primary">Read More &rarr;</a>
-            </div>
-            <div class="card-footer text-muted">
-              Posted on <?php echo htmlentities($row['postingdate']);?>
-           
-            </div>
-          </div>
-<?php } ?>
-       
-
-
-    <ul class="pagination justify-content-center mb-4">
-        <li class="page-item"><a href="?pageno=1"  class="page-link">First</a></li>
-        <li class="<?php if($pageno <= 1){ echo 'disabled'; } ?> page-item">
-            <a href="<?php if($pageno <= 1){ echo '#'; } else { echo "?pageno=".($pageno - 1); } ?>" class="page-link">Prev</a>
-        </li>
-        <li class="<?php if($pageno >= $total_pages){ echo 'enabled'; } ?> page-item">
-            <a href="<?php if($pageno >= $total_pages){echo "?pageno=".($pageno + 1); } else { echo "?pageno=".($pageno + 1); } ?> " class="page-link">Next</a>
-        </li>
-        <li class="page-item"><a href="?pageno=<?php echo $total_pages; ?>" class="page-link">Last</a></li>
-    </ul>
-
-        </div>
-
-        <!-- Sidebar Widgets Column -->
-      <?php include('includes/sidebar.php');?>
-      </div>
-      <!-- /.row -->
-
-    </div>
-    <!-- /.container -->
-
-    <!-- Footer -->
-      <?php include('includes/footer.php');?>
-
-
-      
-    <!-- Bootstrap core JavaScript -->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-
-    
-<script>
-//Get the button
-var mybutton = document.getElementById("show");
-
-// When the user scrolls down 20px from the top of the document, show the button
-window.onscroll = function() {scrollFunction()};
-
-function scrollFunction() {
-  if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
-    mybutton.style.display = "block";
+    // Getting username/ email and password
+     $uname=$_POST['username'];
+    $password=$_POST['password'];
+    // Fetch data from database on the basis of username/email and password
+$sql =mysqli_query($con,"SELECT AdminUserName,AdminEmailId,AdminPassword FROM tbladmin WHERE (AdminUserName='$uname' || AdminEmailId='$uname')");
+ $num=mysqli_fetch_array($sql);
+if($num>0)
+{
+$hashpassword=$num['AdminPassword']; // Hashed password fething from database
+//verifying Password
+if (password_verify($password, $hashpassword)) {
+$_SESSION['login']=$_POST['username'];
+    echo "<script type='text/javascript'> document.location = 'dashboard.php'; </script>";
   } else {
-    mybutton.style.display = "none";
+echo "<script>alert('Wrong Password');</script>";
+ 
   }
 }
-
-// When the user clicks on the button, scroll to the top of the document
-function topFunction() {
-  document.body.scrollTop = 0;
-  document.documentElement.scrollTop = 0;
+//if username or email not found in database
+else{
+echo "<script>alert('User not registered with us');</script>";
+  }
+ 
 }
-</script>
+?>
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>TTU Events System | Login Page </title>
+  
+ <link href="../images/ttu logo.jpg" rel="icon">
+<!-- 
+<link href="assets/css/bootstrap.css" rel='stylesheet' type='text/css' />
 
-   
+<link href="assets/css/style.css" rel='stylesheet' type='text/css' />
+
+<link href="assets/css/font-awesome.css" rel="stylesheet"> 
+
+<link href='//fonts.googleapis.com/css?family=Roboto+Condensed:400,300,300italic,400italic,700,700italic' rel='stylesheet' type='text/css'>  -->
+
+<style>
+body{
+	margin: 0;
+	padding: 0;
+	background: url(" ../assets/img/kk.jpg");
+    /* background-size: cover; */
+    width:100%;
+	font-family: sans-serif;
+}
+.loginbox{
+	width: 320px;
+	height: 450px;
+	background: rgba(0, 0, 0, 0.5);
+	color: #fff;
+	top: 50%;
+	left: 50%;
+	position: absolute;
+	transform: translate(-50%,-50%);
+	box-sizing: border-box;
+	padding: 70px 30px;
+}
+.avatar{
+	width: 100px;
+	height: 100px;
+	border-radius:  50%;
+	overflow: hidden;
+	position: absolute;
+	top: calc(-100px/2);
+	left: calc(50% - 50px); 
+}
+h1{
+	margin: 0;
+	padding: 0 0 20px;
+	text-align: center;
+	font-size: 22px;
+}
+.loginbox p{
+	margin: 0;
+	padding: 0;
+	font-weight: bold;
+}
+.loginbox input{
+	width: 100%;
+	margin-bottom: 20px;
+}
+.loginbox input[type="text"], input[type="password"]
+{
+	border: none;
+	border-bottom: 1px solid #fff;
+	background: transparent;
+	outline: none;
+	height: 40px;
+	color: aliceblue;
+	font-size: 16px;
+}
+ input[type="email"], input[type="tel"]
+{
+	border: none;
+	border-bottom: 1px solid #fff;
+	background: transparent;
+	outline: none;
+	height: 40px;
+	color: aliceblue;
+	font-size: 16px;
+}
+.loginbox input[type="submit"]
+{
+	border: none;
+	outline: none;
+	height: 40px;
+	background: #fb2525;
+	color: #fff;
+	font-size: 18px;
+	border-radius: 20px;
+}
+.loginbox input[type="submit"]:hover
+{
+	cursor: pointer;
+	background: #ffc107;
+	color: #000;
+}
+.loginbox a{
+	text-decoration: none;
+	font-size: 12px;
+	line-height: 20px;
+	color: darkgrey;
+	
+	
+}
+.loginbox a:hover
+{
+	color: #ffc107;
+}
+
+</style>
+
+
+</head> 
+<body>
+
+								<div class="loginbox">
+                                   <img src="assets/images/ttu.jpg" class="avatar">
+                              
+                              <form method="post"  role="form">
+                            <h1> <u> Login Here</u></h1>
+                                        <p>Email</p>
+                                    <input type="text" class="user" name="username" placeholder="Username" required="true">
+                                           
+                                                  <br> <br>
+                                                		<p>Password</p>
+                                               
+                                       
+											
+											<input type="password" name="password" class="lock" placeholder="Password" required="true">
+											<input type="submit" name="login" value="Sign In">
+											
+
+
+
+                                       <p>Click Here to Main menu <a href="../index.php" id="Tohome">Home</a>
+                                   </form>
+                                               <br><br>                     
+                                   <marquee width="100%">Welcome to TTU Online NewsPortal  </marquee>
+        
+           
+                              </div>
+	
+	  <script>
+            var resizefunc = [];
+        </script>
+
+        <!-- jQuery  -->
+        <script src="assets/js/jquery.min.js"></script>
+        <script src="assets/js/bootstrap.min.js"></script>
+        <script src="assets/js/detect.js"></script>
+        <script src="assets/js/fastclick.js"></script>
+        <script src="assets/js/jquery.blockUI.js"></script>
+        <script src="assets/js/waves.js"></script>
+        <script src="assets/js/jquery.slimscroll.js"></script>
+        <script src="assets/js/jquery.scrollTo.min.js"></script>
+
+        <!-- App js -->
+        <script src="assets/js/jquery.core.js"></script>
+        <script src="assets/js/jquery.app.js"></script>
+
 </body>
-
 </html>
-
